@@ -58,7 +58,6 @@ def stabilize(url):
         if 'ssl' in str(e).lower():
             pass
         else:
-            print ('%s Unable to connect to the target.' % bad)
             return False
     return url
 
