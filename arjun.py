@@ -26,7 +26,7 @@ parser.add_argument('-u', help='target url', dest='url')
 parser.add_argument('-o', help='path for the output file', dest='output_file')
 parser.add_argument('-d', help='request delay', dest='delay', type=float, default=0)
 parser.add_argument('-t', help='number of threads', dest='threads', type=int, default=2)
-parser.add_argument('-f', help='wordlist path', dest='wordlist', default='/root/scripts/Arjun/db/params.txt')
+parser.add_argument('-f', help='wordlist path', dest='wordlist', default='./db/params.txt')
 parser.add_argument('--urls', help='file containing target urls', dest='url_file')
 parser.add_argument('--get', help='use get method', dest='GET', action='store_true')
 parser.add_argument('--post', help='use post method', dest='POST', action='store_true')
@@ -113,26 +113,22 @@ def heuristic(response, paramList):
                             paramList.remove(inpName)
                         done.append(inpName)
                         paramList.insert(0, inpName)
-                        print('%s Heuristic found a potential %s parameter: %s%s%s' % (good, method.group(1), green, inpName, end))
-                        print('%s Prioritizing it' % info)
     emptyJSvars = re.finditer(r'var\s+([^=]+)\s*=\s*[\'"`][\'"`]', response)
     for each in emptyJSvars:
         inpName = each.group(1)
         done.append(inpName)
         paramList.insert(0, inpName)
-        print('%s Heuristic found a potential parameter: %s%s%s' % (good, green, inpName, end))
-        print('%s Prioritizing it' % info)
 
 def quickBruter(params, originalResponse, originalCode, reflections, factors, include, delay, headers, url, GET):
     joined = joiner(params, include)
     try:
-      newResponse = requester(url, joined, headers, GET, delay)
-    except:
-      pass
+        newResponse = requester(url, joined, headers, GET, delay)
+    except Exception:
+        pass
     if newResponse.status_code == 429:
         if core.config.globalVariables['stable']:
             print('%s Hit rate limit, stabilizing the connection..')
-            time.sleep(30)
+            time.sleep(15)
             return params
         else:
             print('%s Target has rate limiting in place, please use --stable switch' % bad)
@@ -164,8 +160,8 @@ def initialize(url, include, headers, GET, delay, paramList, threadCount):
     url = stabilize(url)
     if not url:
         return {}
+    else:
         firstResponse = requester(url, include, headers, GET, delay)
-
 
         originalFuzz = randomString(6)
         data = {originalFuzz : originalFuzz[::-1]}
@@ -207,8 +203,12 @@ def initialize(url, include, headers, GET, delay, paramList, threadCount):
             if exists:
                 foundParams.append(param)
 
+
         for each in foundParams:
-            print('%s?%s'.format(url, each)
+            print('%s?%s' %(url, each))
+        if not foundParams:
+            pass
+        return foundParams
 
 finalResult = {}
 
@@ -217,7 +217,7 @@ try:
         finalResult[url] = []
         try:
             finalResult[url] = initialize(url, include, headers, GET, delay, paramList, threadCount)
-        except ConnectionError:
+        except Exception:
             quit()
     elif urls:
         for url in urls:
@@ -226,8 +226,8 @@ try:
             try:
                 finalResult[url] = initialize(url, include, headers, GET, delay, list(paramList), threadCount)
                 if finalResult[url]:
-                    pass
-            except ConnectionError:
+                    print('%s Parameters found: %s' % (good, ', '.join(finalResult[url])))
+            except Exception:
                 pass
 except KeyboardInterrupt:
     print('%s Exiting..                ' % bad)
