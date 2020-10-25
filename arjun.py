@@ -164,28 +164,21 @@ def initialize(url, include, headers, GET, delay, paramList, threadCount):
     url = stabilize(url)
     if not url:
         return {}
-    else:
-        print('%s Analysing the content of the webpage' % run)
         firstResponse = requester(url, include, headers, GET, delay)
 
-        print('%s Analysing behaviour for a non-existent parameter' % run)
 
         originalFuzz = randomString(6)
         data = {originalFuzz : originalFuzz[::-1]}
         data.update(include)
         response = requester(url, data, headers, GET, delay)
         reflections = response.text.count(originalFuzz[::-1])
-        print('%s Reflections: %s%i%s' % (info, green, reflections, end))
 
         originalResponse = response.text
         originalCode = response.status_code
-        print('%s Response Code: %s%i%s' % (info, green, originalCode, end))
 
         newLength = len(response.text)
         plainText = removeTags(originalResponse)
         plainTextLength = len(plainText)
-        print('%s Content Length: %s%i%s' % (info, green, newLength, end))
-        print('%s Plain-text Length: %s%i%s' % (info, green, plainTextLength, end))
 
         factors = {'sameHTML': False, 'samePlainText': False}
         if len(firstResponse.text) == len(originalResponse):
@@ -193,14 +186,11 @@ def initialize(url, include, headers, GET, delay, paramList, threadCount):
         elif len(removeTags(firstResponse.text)) == len(plainText):
             factors['samePlainText'] = True
 
-        print('%s Parsing webpage for potential parameters' % run)
         heuristic(firstResponse.text, paramList)
 
         fuzz = randomString(8)
         data = {fuzz : fuzz[::-1]}
         data.update(include)
-
-        print('%s Performing heuristic level checks' % run)
 
         toBeChecked = slicer(paramList, 50)
         foundParamsTemp = []
@@ -217,13 +207,8 @@ def initialize(url, include, headers, GET, delay, paramList, threadCount):
             if exists:
                 foundParams.append(param)
 
-        print('%s Scan Completed    ' % info)
-
         for each in foundParams:
-            print('%s Valid parameter found: %s%s%s' % (good, green, each, end))
-        if not foundParams:
-            print('%s Unable to verify existence of parameters detected by heuristic.' % bad)
-        return foundParams
+            print('%s?%s'.format(url, each)
 
 finalResult = {}
 
@@ -233,7 +218,6 @@ try:
         try:
             finalResult[url] = initialize(url, include, headers, GET, delay, paramList, threadCount)
         except ConnectionError:
-            print('%s Target has rate limiting in place, please use --stable switch.' % bad)
             quit()
     elif urls:
         for url in urls:
@@ -242,9 +226,8 @@ try:
             try:
                 finalResult[url] = initialize(url, include, headers, GET, delay, list(paramList), threadCount)
                 if finalResult[url]:
-                    print('%s Parameters found: %s' % (good, ', '.join(finalResult[url])))
+                    pass
             except ConnectionError:
-                print('%s Target has rate limiting in place, please use --stable switch.' % bad)
                 pass
 except KeyboardInterrupt:
     print('%s Exiting..                ' % bad)
