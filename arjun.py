@@ -4,12 +4,6 @@ from __future__ import print_function
 
 from core.colors import green, white, end, info, bad, good, run
 
-print('''%s    _
-   /_| _ '
-  (  |/ /(//) v1.6
-      _/      %s
-''' % (green, end))
-
 try:
     import concurrent.futures
 except ImportError:
